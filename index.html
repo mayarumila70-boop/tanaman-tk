@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Pembelajaran Interaktif - Mengenal Buah-Buahan</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Kids -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti Library for Victory Effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Fredoka', 'Quicksand', cursive, sans-serif;
+            background: linear-gradient(135deg, #fef08a 0%, #bbf7d0 50%, #fed7aa 100%);
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .btn-bounce {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+        }
+        .btn-bounce:hover {
+            transform: scale(1.06) translateY(-3px);
+        }
+        .btn-bounce:active {
+            transform: scale(0.95) translateY(2px);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.8)); }
+            50% { filter: drop-shadow(0 0 22px rgba(234, 88, 12, 0.9)); }
+        }
+
+        .glow-effect {
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* Puzzle & Drag Drop Styling */
+        .puzzle-slot {
+            border: 3px dashed #fb923c;
+            background-color: rgba(255, 255, 255, 0.6);
+            transition: all 0.2s ease;
+        }
+
+        .puzzle-slot.drag-over {
+            background-color: #fef08a;
+            border-color: #16a34a;
+            transform: scale(1.03);
+        }
+
+        .piece-item {
+            cursor: grab;
+            transition: transform 0.15s ease;
+        }
+        .piece-item:active {
+            cursor: grabbing;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fef08a;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f97316;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen overflow-x-hidden">
+
+    <header class="bg-amber-400 border-b-4 border-amber-500 shadow-lg px-4 py-3 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <!-- App Title -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('main-menu')">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md animate-bounce">
+                    <span class="text-2xl">🍎</span>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-red-600 tracking-wide drop-shadow-sm">Dunia Buah PAUD</h1>
+                    <p class="text-xs text-amber-900 font-semibold hidden sm:block">Belajar & Bermain Ceria</p>
+                </div>
+            </div>
+
+            <!-- Header Controls -->
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <button id="btn-sound" onclick="toggleSound()" class="btn-bounce bg-white text-amber-700 hover:bg-amber-100 p-2.5 md:px-4 md:py-2 rounded-2xl font-bold text-sm shadow-md border-2 border-amber-300 flex items-center space-x-1">
+                    <i id="sound-icon" class="fa-solid fa-volume-high text-lg"></i>
+                    <span id="sound-text" class="hidden md:inline">Suara: ON</span>
+                </button>
+
+                <button onclick="toggleFullscreen()" class="btn-bounce bg-sky-400 text-white hover:bg-sky-500 p-2.5 md:px-3 md:py-2 rounded-2xl font-bold text-sm shadow-md border-2 border-sky-300">
+                    <i class="fa-solid fa-expand text-lg"></i>
+                </button>
+
+                <button onclick="showSection('main-menu')" class="btn-bounce bg-emerald-500 text-white hover:bg-emerald-600 px-3 py-2 rounded-2xl font-bold text-sm shadow-md border-2 border-emerald-400 flex items-center space-x-1">
+                    <i class="fa-solid fa-house text-lg"></i>
+                    <span class="hidden sm:inline">Menu Utama</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center">
+
+        <!-- SECTION 0: MAIN MENU -->
+        <section id="sec-main-menu" class="space-y-6 text-center">
+            <div class="bg-white/80 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-xl border-4 border-yellow-300 max-w-3xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-amber-600 mb-2 animate-pulse">Halo Teman Small Hero! 👋</h2>
+                <p class="text-base md:text-lg text-slate-700 font-semibold mb-6">Pilih permainan seru yang ingin kamu coba hari ini!</p>
+
+                <!-- Grid Buttons Menu -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                    <!-- Button 1: Belajar Buah -->
+                    <button onclick="playSpeech('Mari belajar mengenal buah-buahan!'); showSection('belajar-buah')" class="btn-bounce bg-gradient-to-r from-red-400 to-rose-500 hover:from-red-500 hover:to-rose-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-red-700 flex items-center space-x-4">
+                        <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl shadow-inner">
+                            🍎
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-xl md:text-2xl font-bold">Belajar Buah</h3>
+                            <p class="text-xs md:text-sm text-red-100 font-medium">Kenali warna & manfaat buah</p>
+                        </div>
+                    </button>
+
+                    <!-- Button 2: Susun Gambar -->
+                    <button onclick="playSpeech('Yuk susun potongan gambar buah!'); showSection('susun-gambar')" class="btn-bounce bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 text-white p-5 rounded-3xl shadow-lg border-b-8 border-orange-700 flex items-center space-x-4">
+                        <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl shadow-inner">
+                            🧩
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-xl md:text-2xl font-bold">Susun Gambar</h3>
+                            <p class="text-xs md:text-sm text-orange-100 font-medium">Gabungkan 4 potongan buah</p>
+                        </div>
+                    </button>
+
+                    <!-- Button 3: Puzzle Buah -->
+                    <button onclick="playSpeech('Saatnya bermain puzzle buah!'); showSection('puzzle-buah')" class="btn-bounce bg-gradient-to-r from-emerald-400 to-green-600 hover:from-emerald-500 hover:to-green-700 text-white p-5 rounded-3xl shadow-lg border-b-8 border-green-800 flex items-center space-x-4">
+                        <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl shadow-inner">
+                            🎮
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-xl md:text-2xl font-bold">Puzzle Buah</h3>
+                            <p class="text-xs md:text-sm text-emerald-100 font-medium">Tingkat Mudah, Sedang, Sulit</p>
+                        </div>
+                    </button>
+
+                    <!-- Button 4: Kuis Cepat -->
+                    <button onclick="playSpeech('Ayo uji pengetahuanmu di Kuis Cepat!'); startQuiz()" class="btn-bounce bg-gradient-to-r from-sky-400 to-blue-600 hover:from-sky-500 hover:to-blue-700 text-white p-5 rounded-3xl shadow-lg border-b-8 border-blue-800 flex items-center space-x-4">
+                        <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl shadow-inner">
+                            🎯
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-xl md:text-2xl font-bold">Kuis Cepat</h3>
+                            <p class="text-xs md:text-sm text-sky-100 font-medium">Tebak gambar buah & kumpul poin</p>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Secondary Row Buttons -->
+                <div class="mt-6 flex flex-wrap justify-center gap-4">
+                    <button onclick="showSection('skor-saya')" class="btn-bounce bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-2xl font-bold shadow-md border-b-4 border-purple-700 flex items-center space-x-2">
+                        <i class="fa-solid fa-trophy text-amber-300 text-xl"></i>
+                        <span>Skor Saya</span>
+                    </button>
+
+                    <button onclick="showSection('panduan-gas')" class="btn-bounce bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-2xl font-bold shadow-md border-b-4 border-teal-700 flex items-center space-x-2">
+                        <i class="fa-solid fa-cloud-arrow-up text-teal-200 text-xl"></i>
+                        <span>Panduan Google Sheets & Deploy</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 1: BELAJAR BUAH -->
+        <section id="sec-belajar-buah" class="hidden space-y-6">
+            <div class="text-center max-w-2xl mx-auto">
+                <h2 class="text-3xl font-extrabold text-red-600 drop-shadow">🍎 Belajar Mengenal Buah</h2>
+                <p class="text-slate-700 font-medium text-sm md:text-base mt-1">Sentuh atau klik pada gambar buah untuk mendengarkan nama, warna, dan manfaatnya!</p>
+            </div>
+
+            <!-- Grid 10 Buah -->
+            <div id="fruits-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                <!-- Javascript dynamic insertion -->
+            </div>
+
+            <!-- Modal Detail Buah -->
+            <div id="fruit-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full text-center relative border-8 border-yellow-300 shadow-2xl animate-bounce-short">
+                    <button onclick="closeFruitModal()" class="absolute top-3 right-3 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-xl hover:bg-red-600 shadow">
+                        ✕
+                    </button>
+                    <div id="modal-svg" class="w-40 h-40 mx-auto my-2 glow-effect"></div>
+                    <h3 id="modal-title" class="text-3xl font-extrabold text-amber-600">Nama Buah</h3>
+                    
+                    <div class="mt-4 space-y-2 text-left bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                        <p class="text-sm md:text-base font-semibold text-slate-700">🎨 <span class="font-bold">Warna:</span> <span id="modal-color" class="text-slate-900"></span></p>
+                        <p class="text-sm md:text-base font-semibold text-slate-700">❤️ <span class="font-bold">Manfaat:</span> <span id="modal-benefit" class="text-slate-900"></span></p>
+                    </div>
+
+                    <button id="modal-speak-btn" class="mt-5 btn-bounce bg-emerald-500 text-white font-bold px-6 py-3 rounded-2xl w-full shadow-lg border-b-4 border-emerald-700 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-volume-high text-xl"></i>
+                        <span>Dengarkan Suara Narasi</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: SUSUN GAMBAR BUAH (4 PIECES) -->
+        <section id="sec-susun-gambar" class="hidden space-y-6">
+            <div class="text-center max-w-xl mx-auto">
+                <h2 class="text-3xl font-extrabold text-orange-600">🧩 Susun Gambar Buah</h2>
+                <p class="text-slate-700 text-sm md:text-base">Pilih buah, lalu tarik (drag) atau klik potongan untuk memasangkannya pada bingkai di sebelah kanan!</p>
+            </div>
+
+            <!-- Fruit Picker for Assemble -->
+            <div class="flex justify-center flex-wrap gap-2" id="assemble-fruit-picker">
+                <!-- Javascript dynamic buttons -->
+            </div>
+
+            <div class="bg-white/90 rounded-3xl p-6 shadow-xl max-w-4xl mx-auto border-4 border-orange-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    
+                    <!-- Container Potongan Acak -->
+                    <div class="bg-orange-50 p-4 rounded-2xl border-2 border-orange-200 text-center">
+                        <h4 class="font-bold text-slate-700 mb-3 text-lg">📦 Potongan Acak</h4>
+                        <div id="assemble-source-box" class="grid grid-cols-2 gap-3 min-h-[220px] items-center justify-center">
+                            <!-- Dynamic Piece Items -->
+                        </div>
+                    </div>
+
+                    <!-- Bingkai Target (2x2 Grid) -->
+                    <div class="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-200 text-center">
+                        <h4 class="font-bold text-slate-700 mb-3 text-lg">🖼️ Bingkai Buah Utuh</h4>
+                        <div id="assemble-target-board" class="grid grid-cols-2 gap-2 w-64 h-64 mx-auto bg-white p-2 rounded-xl shadow-inner border-2 border-emerald-300">
+                            <!-- 4 Target Slots -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="mt-6 flex justify-between items-center flex-wrap gap-3">
+                    <button onclick="initAssembleGame()" class="btn-bounce bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 py-2.5 rounded-2xl shadow border-b-4 border-amber-700 flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Acak Ulang</span>
+                    </button>
+                    <div class="text-right">
+                        <span class="text-sm text-slate-600 font-bold">Status: </span>
+                        <span id="assemble-status" class="text-sm font-extrabold text-orange-600">Belum Selesai</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: PUZZLE BUAH (3 DIFFICULTY LEVELS) -->
+        <section id="sec-puzzle-buah" class="hidden space-y-6">
+            <div class="text-center max-w-2xl mx-auto">
+                <h2 class="text-3xl font-extrabold text-emerald-600">🎮 Puzzle Gambar Buah</h2>
+                <p class="text-slate-700 text-sm md:text-base">Pilih tingkat kesulitan dan selesaikan puzzle!</p>
+            </div>
+
+            <!-- Controls: Difficulty & Fruit Picker -->
+            <div class="bg-white/80 p-4 rounded-3xl shadow-md max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 border-2 border-emerald-300">
+                <!-- Level Selector -->
+                <div class="flex items-center space-x-2">
+                    <span class="font-bold text-slate-700 text-sm">Level:</span>
+                    <button onclick="setPuzzleDifficulty('easy')" id="btn-diff-easy" class="btn-bounce px-3 py-1.5 rounded-xl font-bold text-sm bg-emerald-500 text-white shadow">Mudah (4)</button>
+                    <button onclick="setPuzzleDifficulty('medium')" id="btn-diff-medium" class="btn-bounce px-3 py-1.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-700 hover:bg-emerald-100">Sedang (6)</button>
+                    <button onclick="setPuzzleDifficulty('hard')" id="btn-diff-hard" class="btn-bounce px-3 py-1.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-700 hover:bg-emerald-100">Sulit (9)</button>
+                </div>
+
+                <!-- Fruit Selection for Puzzle -->
+                <div class="flex items-center space-x-2 overflow-x-auto max-w-full py-1" id="puzzle-fruit-buttons">
+                    <!-- Javascript buttons -->
+                </div>
+            </div>
+
+            <!-- Puzzle Game Board area -->
+            <div class="bg-white rounded-3xl p-6 shadow-xl max-w-xl mx-auto border-4 border-emerald-300 text-center">
+                <div id="puzzle-board" class="mx-auto bg-emerald-50 rounded-2xl p-3 border-2 border-emerald-200 shadow-inner grid gap-2 justify-center" style="width: 280px; height: 280px;">
+                    <!-- Tile pieces generated dynamically -->
+                </div>
+
+                <div class="mt-5 flex justify-between items-center">
+                    <button onclick="initPuzzleGame()" class="btn-bounce bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-2xl shadow border-b-4 border-emerald-700">
+                        <i class="fa-solid fa-arrows-rotate mr-1"></i> Mulai Ulang
+                    </button>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-500">Langkah</p>
+                        <p id="puzzle-moves" class="text-lg font-extrabold text-emerald-700">0</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: KUIS CEPAT -->
+        <section id="sec-kuis-cepat" class="hidden space-y-6">
+            <div class="max-w-2xl mx-auto bg-white/90 rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-sky-300 relative">
+                <!-- Header Kuis -->
+                <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-sky-100">
+                    <div>
+                        <span class="text-xs font-bold text-sky-600 uppercase tracking-wider">Kuis Pembelajaran</span>
+                        <h3 class="text-2xl font-black text-slate-800">Soal <span id="quiz-current-step">1</span> dari 10</h3>
+                    </div>
+                    <div class="bg-amber-100 px-4 py-2 rounded-2xl border border-amber-300 flex items-center space-x-2">
+                        <i class="fa-solid fa-star text-amber-500 text-xl animate-spin"></i>
+                        <span id="quiz-score" class="text-xl font-black text-amber-700">0 Poin</span>
+                    </div>
+                </div>
+
+                <!-- Quiz Main Area -->
+                <div id="quiz-active-box" class="space-y-6">
+                    <div class="bg-sky-50 rounded-2xl p-6 text-center border-2 border-sky-200 flex flex-col items-center">
+                        <p class="text-lg font-extrabold text-slate-700 mb-4">Buah apakah gambar di bawah ini?</p>
+                        <div id="quiz-svg-display" class="w-44 h-44 glow-effect my-2"></div>
+                    </div>
+
+                    <!-- Multiple Choice Buttons -->
+                    <div id="quiz-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Dynamic option buttons -->
+                    </div>
+                </div>
+
+                <!-- Quiz Summary Result View -->
+                <div id="quiz-result-box" class="hidden space-y-6 text-center py-4">
+                    <div class="text-6xl mb-2 animate-bounce">🏆</div>
+                    <h3 class="text-3xl font-black text-amber-600">Hore! Kuis Selesai!</h3>
+                    
+                    <div class="bg-amber-50 p-6 rounded-3xl border-2 border-amber-200 max-w-md mx-auto space-y-3">
+                        <p class="text-lg font-bold text-slate-700">Total Skor Kamu: <span id="res-total-score" class="text-2xl font-black text-amber-600">0</span></p>
+                        <p class="text-sm font-semibold text-slate-600">Jawaban Benar: <span id="res-correct-count" class="text-emerald-600 font-bold">0</span> dari 10 Soal</p>
+                        
+                        <!-- Star Badges -->
+                        <div class="pt-2">
+                            <p class="text-xs text-slate-500 font-bold mb-1">Pencapaian Lencana:</p>
+                            <div id="res-star-badges" class="text-4xl space-x-2">
+                                ⭐⭐⭐
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Simpan Ke Google Sheets -->
+                    <div class="bg-sky-50 p-5 rounded-3xl border-2 border-sky-200 max-w-md mx-auto text-left space-y-3">
+                        <h4 class="font-bold text-sky-900 text-center">📝 Simpan Laporan Ke Google Spreadsheet</h4>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Nama Anak / Murid:</label>
+                            <input type="text" id="input-child-name" placeholder="Contoh: Budi PAUD A" class="w-full px-4 py-2 rounded-xl border border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-400 font-semibold text-sm">
+                        </div>
+                        <button onclick="submitResultToGoogleSheet()" class="btn-bounce w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow border-b-4 border-emerald-700 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Kirim Hasil Belajar</span>
+                        </button>
+                    </div>
+
+                    <div class="pt-4 flex justify-center space-x-3">
+                        <button onclick="startQuiz()" class="btn-bounce bg-sky-500 hover:bg-sky-600 text-white font-bold px-6 py-3 rounded-2xl shadow border-b-4 border-sky-700">
+                            🔄 Main Kuis Lagi
+                        </button>
+                        <button onclick="showSection('main-menu')" class="btn-bounce bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-2xl shadow border-b-4 border-amber-700">
+                            🏠 Ke Menu Utama
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: SKOR SAYA & RIWAYAT -->
+        <section id="sec-skor-saya" class="hidden space-y-6">
+            <div class="max-w-3xl mx-auto bg-white/90 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-purple-300 space-y-6">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-purple-700">🏆 Hasil Belajar & Skor Saya</h2>
+                    <p class="text-slate-600 text-sm mt-1">Catatan pencapaian belajar tersimpan otomatis di perangkat ini.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                    <div class="bg-purple-50 p-4 rounded-2xl border border-purple-200">
+                        <p class="text-xs text-purple-600 font-bold uppercase">Total Skor Kumulatif</p>
+                        <p id="dash-total-score" class="text-3xl font-black text-purple-700">0</p>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                        <p class="text-xs text-amber-600 font-bold uppercase">Aktivitas Selesai</p>
+                        <p id="dash-activities-count" class="text-3xl font-black text-amber-600">0</p>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200">
+                        <p class="text-xs text-emerald-600 font-bold uppercase">Bintang Dikumpulkan</p>
+                        <p id="dash-stars-count" class="text-3xl font-black text-emerald-600">⭐ 0</p>
+                    </div>
+                </div>
+
+                <!-- Activity Log Table -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <h4 class="font-bold text-slate-700 mb-3 flex justify-between items-center">
+                        <span>📋 Riwayat Aktivitas</span>
+                        <button onclick="clearHistory()" class="text-xs text-red-500 hover:underline">Hapus Riwayat</button>
+                    </h4>
+                    <div class="overflow-x-auto max-h-56 overflow-y-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-200 text-slate-700 font-bold">
+                                <tr>
+                                    <th class="p-2 rounded-l-lg">Tanggal</th>
+                                    <th class="p-2">Aktivitas</th>
+                                    <th class="p-2 rounded-r-lg">Skor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="divide-y divide-slate-200">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="text-center pt-2">
+                    <button onclick="showSection('main-menu')" class="btn-bounce bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 py-3 rounded-2xl shadow">
+                        Kembali Ke Menu
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: PANDUAN DEPLOYMENT & GOOGLE APPS SCRIPT -->
+        <section id="sec-panduan-gas" class="hidden space-y-6">
+            <div class="max-w-4xl mx-auto bg-white/90 rounded-3xl p-6 md:p-8 shadow-xl border-4 border-teal-300 space-y-6">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-teal-700">⚙️ Integrasi Google Sheets & Deployment</h2>
+                    <p class="text-slate-600 text-sm mt-1">Panduan praktis menghubungkan backend Google Apps Script dan mempublikasikan aplikasi.</p>
+                </div>
+
+                <!-- Input Gas URL Settings -->
+                <div class="bg-teal-50 p-5 rounded-2xl border-2 border-teal-200 space-y-3">
+                    <h3 class="font-bold text-teal-900 text-lg">🔗 Pengaturan Webhook URL Google Apps Script</h3>
+                    <p class="text-xs text-slate-600">Masukkan URL Web App hasil deploy Google Apps Script Anda di sini:</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/AKfycbx.../exec" class="flex-grow px-4 py-2 rounded-xl border border-teal-300 text-xs font-mono focus:outline-none">
+                        <button onclick="saveGasUrl()" class="btn-bounce bg-teal-600 hover:bg-teal-700 text-white font-bold px-4 py-2 rounded-xl text-sm shadow">Simpan URL</button>
+                    </div>
+                </div>
+
+                <!-- Script Code Block -->
+                <div class="bg-slate-900 text-slate-100 p-4 rounded-2xl font-mono text-xs overflow-x-auto space-y-2 border border-slate-700">
+                    <div class="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-2">
+                        <span>Kode Google Apps Script (Code.gs)</span>
+                        <button onclick="copyGasCode()" class="text-amber-400 hover:text-amber-300 font-bold text-xs"><i class="fa-regular fa-copy"></i> Salin Kode</button>
+                    </div>
+                    <pre id="gas-code-block" class="whitespace-pre-wrap text-emerald-400">
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+    
+    // Auto-create header if empty
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["Nama Anak", "Tanggal", "Aktivitas", "Skor"]);
+    }
+    
+    sheet.appendRow([
+      data.nama || "Anak PAUD",
+      data.tanggal || new Date().toLocaleString("id-ID"),
+      data.aktivitas || "Kuis",
+      data.skor || 0
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({"result": "success"}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(error) {
+    return ContentService.createTextOutput(JSON.stringify({"result": "error", "message": error.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+                    </pre>
+                </div>
+
+                <!-- Deployment Guide Tabs -->
+                <div class="space-y-4 text-sm text-slate-700">
+                    <h3 class="font-bold text-slate-800 text-lg">📌 Panduan Deployment & Hosting Free:</h3>
+                    
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
+                        <h4 class="font-bold text-red-600">1. Setup Google Spreadsheet:</h4>
+                        <ol class="list-decimal list-inside space-y-1 text-xs">
+                            <li>Buka Google Sheets baru & klik <b>Ekstensi -> Apps Script</b>.</li>
+                            <li>Hapus isi file <code class="bg-slate-100 px-1">Code.gs</code> lalu tempelkan kode di atas.</li>
+                            <li>Klik <b>Terapkan (Deploy) -> Terapkan Sebagai Aplikasi Web</b>.</li>
+                            <li>Atur <i>Akses (Who has access)</i> menjadi <b>"Siapa Saja" (Anyone)</b>.</li>
+                            <li>Salin URL Web App dan tempelkan pada kolom URL di atas!</li>
+                        </ol>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
+                        <h4 class="font-bold text-blue-600">2. Deployment Ke GitHub Pages:</h4>
+                        <ol class="list-decimal list-inside space-y-1 text-xs">
+                            <li>Buat repository baru di <code class="bg-slate-100 px-1">github.com</code> (misal: <code class="bg-slate-100 px-1">mpi-buah-paud</code>).</li>
+                            <li>Upload file <code class="bg-slate-100 px-1">index.html</code> ini ke repository tersebut.</li>
+                            <li>Masuk ke menu <b>Settings -> Pages</b>.</li>
+                            <li>Pada bagian <i>Branch</i>, pilih <b>main / master</b> dan simpan (Save).</li>
+                            <li>Website Anda aktif secara instan pada tautan <code class="bg-slate-100 px-1">https://username.github.io/mpi-buah-paud</code>.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="text-center pt-2">
+                    <button onclick="showSection('main-menu')" class="btn-bounce bg-teal-600 hover:bg-teal-700 text-white font-bold px-6 py-3 rounded-2xl shadow">
+                        Kembali Ke Menu
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-amber-300 border-t-2 border-amber-400 py-3 text-center text-amber-900 text-xs font-bold mt-auto">
+        <p>Media Pembelajaran Interaktif PAUD &copy; 2026 - Mengenal Buah-Buahan | Ramah Anak & Edukatif</p>
+    </footer>
+
+    <script>
+        /* ==========================================================================
+           1. DATA BUAH & SVG GRAPHICS GENERATOR (10 BUAH)
+           ========================================================================== */
+        const FRUITS = [
+            {
+                id: 'apel',
+                name: 'Apel',
+                color: 'Merah Cerah',
+                benefit: 'Kaya Vitamin C dan serat, bagus untuk jantung & pencernaan.',
+                speechText: 'Apel! Warna merah, rasanya manis dan renyah. Bagus untuk kesehatan!',
+                bgColor: 'bg-red-100',
+                borderColor: 'border-red-400',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Apple Leaf & Stem -->
+                        <path d="M50 22 C50 10, 58 10, 58 18" stroke="#78350f" stroke-width="4" fill="none" stroke-linecap="round"/>
+                        <path d="M52 20 Q65 10 68 22 Q55 28 52 20 Z" fill="#22c55e" />
+                        <!-- Body -->
+                        <path d="M50 30 C20 20, 10 50, 22 80 C32 98, 48 95, 50 88 C52 95, 68 98, 78 80 C90 50, 80 20, 50 30 Z" fill="#ef4444"/>
+                        <!-- Highlight -->
+                        <ellipse cx="38" cy="42" rx="6" ry="12" fill="#ffffff" opacity="0.4" transform="rotate(-20 38 42)"/>
+                      </svg>`
+            },
+            {
+                id: 'jeruk',
+                name: 'Jeruk',
+                color: 'Oranye Segar',
+                benefit: 'Mengandung Vitamin C tinggi untuk daya tahan tubuh anak.',
+                speechText: 'Jeruk! Warna oranye, kaya Vitamin C agar kita tidak mudah sakit!',
+                bgColor: 'bg-orange-100',
+                borderColor: 'border-orange-400',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                        <path d="M50 20 C50 10, 55 10, 55 18" stroke="#78350f" stroke-width="4" fill="none"/>
+                        <path d="M52 18 Q65 10 68 20 Q55 25 52 18 Z" fill="#22c55e" />
+                        <circle cx="50" cy="58" r="34" fill="#f97316"/>
+                        <!-- Pores -->
+                        <circle cx="35" cy="50" r="1.5" fill="#c2410c"/>
+                        <circle cx="65" cy="52" r="1.5" fill="#c2410c"/>
+                        <circle cx="48" cy="70" r="1.5" fill="#c2410c"/>
+                        <ellipse cx="38" cy="45" rx="5" ry="9" fill="#ffffff" opacity="0.3" transform="rotate(-20 38 45)"/>
+                      </svg>`
+            },
+            {
+                id: 'pisang',
+                name: 'Pisang',
+                color: 'Kuning Cerah',
+                benefit: 'Memberikan energi sehat dan membuat perut merasa kenyang.',
+                speechText: 'Pisang! Warna kuning, rasanya manis dan memberikan banyak energi!',
+                bgColor: 'bg-yellow-100',
+                borderColor: 'border-yellow-400',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                        <path d="M22 30 C 40 10, 75 25, 80 65 C 83 80, 72 85, 62 82 C 45 78, 25 55, 22 30 Z" fill="#eab308"/>
+                        <path d="M20 28 Q 15 22 24 20 Q 28 26 24 32 Z" fill="#854d0e"/>
+                        <path d="M62 82 Q 68 88 64 92 Q 58 88 60 81 Z" fill="#854d0e"/>
+                        <path d="M28 36 C 42 25, 68 38, 72 68" stroke="#fef08a" stroke-width="3" fill="none"/>
+                      </svg>`
+            },
+            {
+                id: 'mangga',
+                name: 'Mangga',
+                color: 'Kuning Jingga',
+                benefit: 'Baik untuk kesehatan mata dan pencernaan.',
+                speechText: 'Mangga! Aromanya harum dan rasanya manis sekali!',
+                bgColor: 'bg-amber-100',
+                borderColor: 'border-amber-400',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                        <path d="M50 18 L50 26" stroke="#78350f" stroke-width="4"/>
+                        <path d="M50 20 Q65 10 68 22 Z" fill="#22c55e"/>
+                        <path d="M48 26 C28 26, 20 50, 32 78 C42 95, 75 92, 78 68 C82 42, 68 26, 48 26 Z" fill="#f59e0b"/>
+                        <ellipse cx="40" cy="45" rx="6" ry="12" fill="#ffffff" opacity="0.3" transform="rotate(-15 40 45)"/>
+                      </svg>`
+            },
+            {
+                id: 'anggur',
+                name: 'Anggur',
+                color: 'Ungu Tua',
+                benefit: 'Bagus untuk kesehatan otak dan menjaga kebersihan darah.',
+                speechText: 'Anggur! Bentuknya bulat kecil dan rasanya segar manis!',
+                bgColor: 'bg-purple-100',
+                borderColor: 'border-purple-400',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Stem -->
+                        <path d="M50 15 L50 30" stroke="#78350f" stroke-width="4"/>
+                        <path d="M50 20 Q65 12 70 24 Z" fill="#22c55e"/>
+                        <!-- Grapes Bunch -->
+                        <circle cx="38" cy="40" r="12" fill="#8b5cf6"/>
+                        <circle cx="62" cy="40" r="12" fill="#8b5cf6"/>
+                        <circle cx="50" cy="48" r="12" fill="#7c3aed"/>
+                        <circle cx="38" cy="60" r="12" fill="#6d28d9"/>
+                        <circle cx="62" cy="60" r="12" fill="#6d28d9"/>
+                        <circle cx="50" cy="72" r="12" fill="#5b21b6"/>
+                        <circle cx="50" cy="84" r="9" fill="#4c1d95"/>
+                      </svg>`
+            },
+            {
+                id: 'semangka',
+                name: 'Semangka',
+                color: 'Hijau (Kulit) & Merah (Daging)',
+                benefit: 'Sangat segar, kaya air agar anak tidak haus.',
+                speechText: 'Semangka! Dagingnya merah segar dan penuh dengan air sehat!',
+                bgColor: 'bg-emerald-100',
+                borderColor: 'border-emerald-400',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Watermelon Slice -->
+                        <path d="M15 35 A 42 42 0 0 0 85 35 Z" fill="#16a34a"/>
+                        <path d="M20 35 A 37 37 0 0 0 80 35 Z" fill="#fef08a"/>
+                        <path d="M24 35 A 33 33 0 0 0 76 35 Z" fill="#ef4444"/>
+                        <!-- Seeds -->
+                        <circle cx="38" cy="45" r="2" fill="#000"/>
+                        <circle cx="50" cy="52" r="2" fill="#000"/>
+                        <circle cx="62" cy="45" r="2" fill="#000"/>
+                        <circle cx="50" cy="38" r="2" fill="#000"/>
+                      </svg>`
+            },
+            {
+                id: 'nanas',
+                name: 'Nanas',
+                color: 'Kuning Cokelat',
+                benefit: 'Membantu melancarkan pencernaan makanan.',
+                speechText: 'Nanas! Punya mahkota daun hijau dan kulit bersisik unik!',
+                bgColor: 'bg-yellow-100',
+                borderColor: 'border-yellow-500',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Crown Leaves -->
+                        <path d="M50 35 L40 10 L50 25 L60 10 Z" fill="#16a34a"/>
+                        <path d="M50 35 L30 18 L45 28 L70 18 Z" fill="#22c55e"/>
+                        <!-- Body -->
+                        <ellipse cx="50" cy="62" rx="26" ry="30" fill="#eab308"/>
+                        <!-- Grid Lines -->
+                        <path d="M30 48 L70 76 M30 76 L70 48 M26 62 L74 62" stroke="#ca8a04" stroke-width="2.5"/>
+                      </svg>`
+            },
+            {
+                id: 'pepaya',
+                name: 'Pepaya',
+                color: 'Oranye Jingga',
+                benefit: 'Melancarkan buang air besar dan menyehatkan lambung.',
+                speechText: 'Pepaya! Lembut dan manis, sangat baik untuk pencernaan kita!',
+                bgColor: 'bg-orange-100',
+                borderColor: 'border-orange-500',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Half Papaya -->
+                        <path d="M50 18 C30 18 20 40 25 70 C30 90 70 90 75 70 C80 40 70 18 50 18 Z" fill="#15803d"/>
+                        <path d="M50 24 C36 24 28 42 32 68 C36 84 64 84 68 68 C72 42 64 24 50 24 Z" fill="#f97316"/>
+                        <!-- Center cavity with seeds -->
+                        <ellipse cx="50" cy="56" rx="10" ry="18" fill="#7c2d12"/>
+                        <circle cx="48" cy="48" r="1.5" fill="#fff"/>
+                        <circle cx="52" cy="54" r="1.5" fill="#fff"/>
+                        <circle cx="50" cy="62" r="1.5" fill="#fff"/>
+                      </svg>`
+            },
+            {
+                id: 'stroberi',
+                name: 'Stroberi',
+                color: 'Merah Bintik',
+                benefit: 'Menjaga kesehatan gusi dan kekebalan tubuh.',
+                speechText: 'Stroberi! Bentuknya seperti hati, rasanya manis dan asam segar!',
+                bgColor: 'bg-rose-100',
+                borderColor: 'border-rose-400',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                        <!-- Top Leaf -->
+                        <path d="M50 28 L35 18 Q45 28 50 30 Q55 28 65 18 Z" fill="#22c55e"/>
+                        <path d="M50 18 L50 10" stroke="#15803d" stroke-width="3"/>
+                        <!-- Heart Strawberry -->
+                        <path d="M50 30 C25 28 15 50 32 75 L50 92 L68 75 C85 50 75 28 50 30 Z" fill="#f43f5e"/>
+                        <!-- Seed Specks -->
+                        <circle cx="40" cy="45" r="1.5" fill="#fef08a"/>
+                        <circle cx="60" cy="45" r="1.5" fill="#fef08a"/>
+                        <circle cx="50" cy="58" r="1.5" fill="#fef08a"/>
+                        <circle cx="42" cy="70" r="1.5" fill="#fef08a"/>
+                        <circle cx="58" cy="70" r="1.5" fill="#fef08a"/>
+                      </svg>`
+            },
+            {
+                id: 'melon',
+                name: 'Melon',
+                color: 'Hijau Muda',
+                benefit: 'Kaya cairan segar dan membuat mata sehat.',
+                speechText: 'Melon! Aromanya harum, warnanya hijau muda yang lembut!',
+                bgColor: 'bg-lime-100',
+                borderColor: 'border-lime-400',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full">
+                        <circle cx="50" cy="55" r="32" fill="#a3e635"/>
+                        <!-- Grid mesh pattern -->
+                        <circle cx="50" cy="55" r="32" fill="none" stroke="#84cc16" stroke-width="3" stroke-dasharray="4,4"/>
+                        <path d="M50 23 L50 15" stroke="#4d7c0f" stroke-width="4"/>
+                        <ellipse cx="38" cy="42" rx="5" ry="10" fill="#ffffff" opacity="0.35" transform="rotate(-20 38 42)"/>
+                      </svg>`
+            }
+        ];
+
+        /* ==========================================================================
+           2. AUDIO SYNTHESIS & SOUND EFFECTS (WEB AUDIO API + WEB SPEECH API)
+           ========================================================================== */
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            const text = document.getElementById('sound-text');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-lg';
+                text.textContent = 'Suara: ON';
+                playPopSound();
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-lg';
+                text.textContent = 'Suara: OFF';
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+            }
+        }
+
+        // Web Speech API Narration (Indonesian)
+        function playSpeech(text) {
+            if (!soundEnabled || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel(); // stop active
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.rate = 0.9; // Slightly slower for kids
+            utterance.pitch = 1.2; // Cheerful pitch
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Web Audio Synthesized Sound Effects
+        function playPopSound() {
+            if (!soundEnabled) return;
+            const ctx = getAudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.08);
+        }
+
+        function playCorrectSound() {
+            if (!soundEnabled) return;
+            const ctx = getAudioContext();
+            const now = ctx.currentTime;
+            [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                gain.gain.setValueAtTime(0.25, now + idx * 0.08);
+                gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.08 + 0.2);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + idx * 0.08);
+                osc.stop(now + idx * 0.08 + 0.2);
+            });
+        }
+
+        function playVictoryApplause() {
+            if (!soundEnabled) return;
+            playCorrectSound();
+            playSpeech("Hebat sekali! Kamu berhasil!");
+            try {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            } catch(e){}
+        }
+
+        /* ==========================================================================
+           3. APP STATE & LOCALSTORAGE PROGRESS
+           ========================================================================== */
+        let appState = {
+            totalScore: 0,
+            activitiesDone: 0,
+            starsEarned: 0,
+            history: [],
+            gasUrl: ''
+        };
+
+        function loadState() {
+            const saved = localStorage.getItem('paud_buah_state');
+            if (saved) {
+                try {
+                    appState = Object.assign(appState, JSON.parse(saved));
+                } catch(e){}
+            }
+            updateDashboardUI();
+        }
+
+        function saveState() {
+            localStorage.setItem('paud_buah_state', JSON.stringify(appState));
+            updateDashboardUI();
+        }
+
+        function addScore(points, activityName) {
+            appState.totalScore += points;
+            appState.activitiesDone += 1;
+            appState.starsEarned += Math.floor(points / 10);
+            
+            const logEntry = {
+                date: new Date().toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                activity: activityName,
+                score: points
+            };
+            appState.history.unshift(logEntry);
+            if (appState.history.length > 20) appState.history.pop();
+
+            saveState();
+        }
+
+        function updateDashboardUI() {
+            document.getElementById('dash-total-score').textContent = appState.totalScore;
+            document.getElementById('dash-activities-count').textContent = appState.activitiesDone;
+            document.getElementById('dash-stars-count').textContent = '⭐ ' + appState.starsEarned;
+
+            const tbody = document.getElementById('history-table-body');
+            if (appState.history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-slate-400">Belum ada riwayat aktivitas.</td></tr>`;
+            } else {
+                tbody.innerHTML = appState.history.map(item => `
+                    <tr class="hover:bg-slate-100">
+                        <td class="p-2 font-mono text-xs text-slate-500">${item.date}</td>
+                        <td class="p-2 font-semibold text-slate-700">${item.activity}</td>
+                        <td class="p-2 font-bold text-amber-600">+${item.score} Poin</td>
+                    </tr>
+                `).join('');
+            }
+
+            if (appState.gasUrl) {
+                document.getElementById('gas-url-input').value = appState.gasUrl;
+            }
+        }
+
+        function clearHistory() {
+            if (confirm("Apakah ingin menghapus semua riwayat belajar?")) {
+                appState.totalScore = 0;
+                appState.activitiesDone = 0;
+                appState.starsEarned = 0;
+                appState.history = [];
+                saveState();
+            }
+        }
+
+        // Navigation Switcher
+        function showSection(sectionId) {
+            playPopSound();
+            const sections = ['main-menu', 'belajar-buah', 'susun-gambar', 'puzzle-buah', 'kuis-cepat', 'skor-saya', 'panduan-gas'];
+            sections.forEach(id => {
+                const el = document.getElementById('sec-' + id);
+                if (el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById('sec-' + sectionId);
+            if (target) {
+                target.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Init specific sections logic
+            if (sectionId === 'susun-gambar') initAssembleGame();
+            if (sectionId === 'puzzle-buah') initPuzzleGame();
+        }
+
+        function toggleFullscreen() {
+            playPopSound();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        /* ==========================================================================
+           4. FEATURE 1: BELAJAR BUAH LOGIC
+           ========================================================================== */
+        function renderBelajarBuah() {
+            const container = document.getElementById('fruits-grid');
+            container.innerHTML = FRUITS.map(fruit => `
+                <div onclick="openFruitModal('${fruit.id}')" class="btn-bounce bg-white rounded-3xl p-4 shadow-lg border-4 ${fruit.borderColor} flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl">
+                    <div class="w-24 h-24 mb-2 animate-float">${fruit.svg}</div>
+                    <span class="text-xl font-bold text-slate-800">${fruit.name}</span>
+                    <span class="text-xs text-slate-500 font-semibold">Ketuk Saya!</span>
+                </div>
+            `).join('');
+        }
+
+        function openFruitModal(fruitId) {
+            playPopSound();
+            const fruit = FRUITS.find(f => f.id === fruitId);
+            if (!fruit) return;
+
+            document.getElementById('modal-svg').innerHTML = fruit.svg;
+            document.getElementById('modal-title').textContent = fruit.name;
+            document.getElementById('modal-color').textContent = fruit.color;
+            document.getElementById('modal-benefit').textContent = fruit.benefit;
+            
+            const speakBtn = document.getElementById('modal-speak-btn');
+            speakBtn.onclick = () => playSpeech(fruit.speechText);
+
+            document.getElementById('fruit-modal').classList.remove('hidden');
+            playSpeech(fruit.speechText);
+        }
+
+        function closeFruitModal() {
+            playPopSound();
+            document.getElementById('fruit-modal').classList.add('hidden');
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+        }
+
+        /* ==========================================================================
+           5. FEATURE 2: SUSUN GAMBAR BUAH (4 PIECES) LOGIC
+           ========================================================================== */
+        let assembleSelectedFruit = FRUITS[0];
+        let assembleBoardState = [null, null, null, null];
+        let assembleSourcePieces = [];
+        let selectedPieceIndex = null; // For touch click-to-swap fallback
+
+        function initAssemblePicker() {
+            const picker = document.getElementById('assemble-fruit-picker');
+            picker.innerHTML = FRUITS.slice(0, 5).map(f => `
+                <button onclick="changeAssembleFruit('${f.id}')" class="btn-bounce px-3 py-1.5 rounded-2xl text-xs font-bold ${f.id === assembleSelectedFruit.id ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-orange-100'} border border-orange-300">
+                    ${f.name}
+                </button>
+            `).join('');
+        }
+
+        function changeAssembleFruit(id) {
+            playPopSound();
+            assembleSelectedFruit = FRUITS.find(f => f.id === id) || FRUITS[0];
+            initAssemblePicker();
+            initAssembleGame();
+        }
+
+        function initAssembleGame() {
+            assembleBoardState = [null, null, null, null];
+            selectedPieceIndex = null;
+            document.getElementById('assemble-status').textContent = 'Belum Selesai';
+            document.getElementById('assemble-status').className = 'text-sm font-extrabold text-orange-600';
+
+            // Pieces 0, 1, 2, 3 corresponding to 2x2 grid quadrants
+            assembleSourcePieces = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+
+            renderAssembleUI();
+        }
+
+        function renderAssembleUI() {
+            const sourceBox = document.getElementById('assemble-source-box');
+            const targetBoard = document.getElementById('assemble-target-board');
+
+            // Render Source Pieces
+            sourceBox.innerHTML = assembleSourcePieces.map((pieceIdx, i) => {
+                if (pieceIdx === null) return `<div class="w-24 h-24 border-2 border-dashed border-orange-200 rounded-xl"></div>`;
+                return `
+                    <div draggable="true" ondragstart="onPieceDragStart(event, ${pieceIdx}, 'source', ${i})" onclick="onPieceClick(${pieceIdx}, 'source', ${i})" class="piece-item w-24 h-24 bg-white rounded-xl shadow-md border-2 border-orange-400 overflow-hidden relative cursor-pointer hover:scale-105">
+                        ${renderCutSvg(assembleSelectedFruit.svg, pieceIdx)}
+                    </div>
+                `;
+            }).join('');
+
+            // Render Target Slots
+            targetBoard.innerHTML = [0, 1, 2, 3].map((slotIdx) => {
+                const placedPiece = assembleBoardState[slotIdx];
+                if (placedPiece !== null) {
+                    return `
+                        <div onclick="onPieceClick(${placedPiece}, 'target', ${slotIdx})" class="w-full h-full bg-white rounded-lg border border-emerald-400 overflow-hidden relative cursor-pointer">
+                            ${renderCutSvg(assembleSelectedFruit.svg, placedPiece)}
+                        </div>
+                    `;
+                }
+                return `
+                    <div ondragover="onSlotDragOver(event)" ondragleave="onSlotDragLeave(event)" ondrop="onSlotDrop(event, ${slotIdx})" onclick="onTargetSlotClick(${slotIdx})" class="puzzle-slot w-full h-full rounded-lg flex items-center justify-center text-xs text-orange-400 font-bold">
+                        ${slotIdx + 1}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // SVG Piece Clipper (2x2)
+        function renderCutSvg(svgContent, pieceIdx) {
+            // piece 0: top-left, 1: top-right, 2: bottom-left, 3: bottom-right
+            const viewBoxes = ['0 0 50 50', '50 0 50 50', '0 50 50 50', '50 50 50 50'];
+            return `<div class="w-full h-full transform scale-100">${svgContent.replace('viewBox="0 0 100 100"', `viewBox="${viewBoxes[pieceIdx]}"`)}</div>`;
+        }
+
+        // Drag & Drop Handlers
+        let draggedPieceData = null;
+
+        function onPieceDragStart(e, pieceIdx, originType, originIdx) {
+            draggedPieceData = { pieceIdx, originType, originIdx };
+        }
+
+        function onSlotDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function onSlotDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function onSlotDrop(e, targetSlotIdx) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            if (!draggedPieceData) return;
+
+            placePieceInSlot(draggedPieceData.pieceIdx, draggedPieceData.originType, draggedPieceData.originIdx, targetSlotIdx);
+        }
+
+        // Click / Touch Fallback Handler
+        function onPieceClick(pieceIdx, originType, originIdx) {
+            playPopSound();
+            selectedPieceIndex = { pieceIdx, originType, originIdx };
+            playSpeech("Pilih slot tujuan pada bingkai!");
+        }
+
+        function onTargetSlotClick(slotIdx) {
+            if (selectedPieceIndex) {
+                placePieceInSlot(selectedPieceIndex.pieceIdx, selectedPieceIndex.originType, selectedPieceIndex.originIdx, slotIdx);
+                selectedPieceIndex = null;
+            }
+        }
+
+        function placePieceInSlot(pieceIdx, originType, originIdx, targetSlotIdx) {
+            playPopSound();
+            if (originType === 'source') {
+                assembleSourcePieces[originIdx] = null;
+            } else if (originType === 'target') {
+                assembleBoardState[originIdx] = null;
+            }
+
+            assembleBoardState[targetSlotIdx] = pieceIdx;
+            renderAssembleUI();
+            checkAssembleWin();
+        }
+
+        function checkAssembleWin() {
+            const isComplete = assembleBoardState.every((val, idx) => val === idx);
+            if (isComplete) {
+                document.getElementById('assemble-status').textContent = ' Selesai! 🎉';
+                document.getElementById('assemble-status').className = 'text-sm font-extrabold text-emerald-600';
+                playVictoryApplause();
+                addScore(10, `Susun Buah ${assembleSelectedFruit.name}`);
+            }
+        }
+
+        /* ==========================================================================
+           6. FEATURE 3: PUZZLE BUAH LOGIC (4, 6, 9 PIECES)
+           ========================================================================== */
+        let puzzleDifficulty = 'easy'; // 'easy' (2x2), 'medium' (2x3), 'hard' (3x3)
+        let puzzleFruit = FRUITS[0];
+        let puzzleTiles = [];
+        let puzzleMovesCount = 0;
+        let selectedPuzzleTile = null;
+
+        function initPuzzleFruitPicker() {
+            const container = document.getElementById('puzzle-fruit-buttons');
+            const choices = FRUITS.slice(0, 5);
+            container.innerHTML = choices.map(f => `
+                <button onclick="changePuzzleFruit('${f.id}')" class="btn-bounce px-3 py-1 rounded-xl text-xs font-bold ${f.id === puzzleFruit.id ? 'bg-emerald-600 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-emerald-100'} border border-emerald-300 whitespace-nowrap">
+                    ${f.name}
+                </button>
+            `).join('');
+        }
+
+        function setPuzzleDifficulty(diff) {
+            playPopSound();
+            puzzleDifficulty = diff;
+            ['easy', 'medium', 'hard'].forEach(d => {
+                const btn = document.getElementById(`btn-diff-${d}`);
+                if (d === diff) {
+                    btn.className = 'btn-bounce px-3 py-1.5 rounded-xl font-bold text-sm bg-emerald-500 text-white shadow';
+                } else {
+                    btn.className = 'btn-bounce px-3 py-1.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-700 hover:bg-emerald-100';
+                }
+            });
+            initPuzzleGame();
+        }
+
+        function changePuzzleFruit(id) {
+            playPopSound();
+            puzzleFruit = FRUITS.find(f => f.id === id) || FRUITS[0];
+            initPuzzleFruitPicker();
+            initPuzzleGame();
+        }
+
+        function initPuzzleGame() {
+            puzzleMovesCount = 0;
+            selectedPuzzleTile = null;
+            document.getElementById('puzzle-moves').textContent = puzzleMovesCount;
+
+            let cols = 2, rows = 2;
+            if (puzzleDifficulty === 'medium') { cols = 2; rows = 3; }
+            if (puzzleDifficulty === 'hard') { cols = 3; rows = 3; }
+
+            const total = cols * rows;
+            puzzleTiles = Array.from({ length: total }, (_, i) => i);
+            
+            // Shuffle
+            puzzleTiles.sort(() => Math.random() - 0.5);
+
+            renderPuzzleBoard(cols, rows);
+        }
+
+        function renderPuzzleBoard(cols, rows) {
+            const board = document.getElementById('puzzle-board');
+            board.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+            board.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+
+            board.innerHTML = puzzleTiles.map((tileVal, currentIdx) => {
+                const isSelected = selectedPuzzleTile === currentIdx;
+                return `
+                    <div onclick="onPuzzleTileClick(${currentIdx})" class="w-full h-full bg-white rounded-xl shadow border-2 ${isSelected ? 'border-amber-500 ring-4 ring-amber-300' : 'border-emerald-300'} overflow-hidden relative cursor-pointer hover:scale-102 transition-all">
+                        ${renderGridCutSvg(puzzleFruit.svg, tileVal, cols, rows)}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderGridCutSvg(svgContent, tileIdx, cols, rows) {
+            const cellW = 100 / cols;
+            const cellH = 100 / rows;
+            const r = Math.floor(tileIdx / cols);
+            const c = tileIdx % cols;
+            const viewBox = `${c * cellW} ${r * cellH} ${cellW} ${cellH}`;
+            return `<div class="w-full h-full">${svgContent.replace('viewBox="0 0 100 100"', `viewBox="${viewBox}"`)}</div>`;
+        }
+
+        function onPuzzleTileClick(index) {
+            playPopSound();
+            let cols = 2, rows = 2;
+            if (puzzleDifficulty === 'medium') { cols = 2; rows = 3; }
+            if (puzzleDifficulty === 'hard') { cols = 3; rows = 3; }
+
+            if (selectedPuzzleTile === null) {
+                selectedPuzzleTile = index;
+            } else {
+                // Swap tiles
+                const temp = puzzleTiles[selectedPuzzleTile];
+                puzzleTiles[selectedPuzzleTile] = puzzleTiles[index];
+                puzzleTiles[index] = temp;
+                selectedPuzzleTile = null;
+                puzzleMovesCount++;
+                document.getElementById('puzzle-moves').textContent = puzzleMovesCount;
+
+                checkPuzzleWin();
+            }
+            renderPuzzleBoard(cols, rows);
+        }
+
+        function checkPuzzleWin() {
+            const isSolved = puzzleTiles.every((val, idx) => val === idx);
+            if (isSolved) {
+                playVictoryApplause();
+                let points = 10;
+                if (puzzleDifficulty === 'medium') points = 15;
+                if (puzzleDifficulty === 'hard') points = 25;
+                addScore(points, `Puzzle ${puzzleFruit.name} (${puzzleDifficulty.toUpperCase()})`);
+            }
+        }
+
+        /* ==========================================================================
+           7. FEATURE 4: KUIS CEPAT LOGIC & GOOGLE APPS SCRIPT SUBMISSION
+           ========================================================================== */
+        let quizStep = 0;
+        let quizScore = 0;
+        let quizCorrectAnswers = 0;
+        let quizQuestions = [];
+
+        function startQuiz() {
+            playPopSound();
+            showSection('kuis-cepat');
+            quizStep = 0;
+            quizScore = 0;
+            quizCorrectAnswers = 0;
+
+            document.getElementById('quiz-active-box').classList.remove('hidden');
+            document.getElementById('quiz-result-box').classList.add('hidden');
+            document.getElementById('quiz-score').textContent = '0 Poin';
+
+            // Generate 10 randomized quiz items
+            quizQuestions = Array.from({ length: 10 }, () => {
+                const target = FRUITS[Math.floor(Math.random() * FRUITS.length)];
+                // Select 3 random distractors
+                const distractors = FRUITS.filter(f => f.id !== target.id)
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, 3);
+                const options = [target, ...distractors].sort(() => Math.random() - 0.5);
+                return { target, options };
+            });
+
+            renderQuizStep();
+        }
+
+        function renderQuizStep() {
+            if (quizStep >= 10) {
+                finishQuiz();
+                return;
+            }
+
+            const current = quizQuestions[quizStep];
+            document.getElementById('quiz-current-step').textContent = quizStep + 1;
+            document.getElementById('quiz-svg-display').innerHTML = current.target.svg;
+
+            const optionsContainer = document.getElementById('quiz-options-container');
+            optionsContainer.innerHTML = current.options.map(option => `
+                <button onclick="checkQuizAnswer('${option.id}')" class="btn-bounce bg-white hover:bg-sky-100 text-slate-800 font-bold p-4 rounded-2xl shadow-md border-2 border-sky-300 text-lg flex items-center justify-center space-x-2">
+                    <span>${option.name}</span>
+                </button>
+            `).join('');
+
+            playSpeech(`Buah apakah ini?`);
+        }
+
+        function checkQuizAnswer(selectedId) {
+            const current = quizQuestions[quizStep];
+            if (selectedId === current.target.id) {
+                playCorrectSound();
+                playSpeech(`Benar! Ini adalah ${current.target.name}`);
+                quizScore += 10;
+                quizCorrectAnswers += 1;
+                document.getElementById('quiz-score').textContent = `${quizScore} Poin`;
+            } else {
+                playSpeech(`Kurang tepat, ini adalah ${current.target.name}`);
+            }
+
+            quizStep++;
+            setTimeout(() => {
+                renderQuizStep();
+            }, 1200);
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-active-box').classList.add('hidden');
+            document.getElementById('quiz-result-box').classList.remove('hidden');
+
+            document.getElementById('res-total-score').textContent = quizScore;
+            document.getElementById('res-correct-count').textContent = quizCorrectAnswers;
+
+            // Star Rating Badges
+            let stars = '⭐';
+            if (quizCorrectAnswers >= 5) stars = '⭐⭐';
+            if (quizCorrectAnswers >= 8) stars = '⭐⭐⭐ (Super Star!)';
+            document.getElementById('res-star-badges').textContent = stars;
+
+            playVictoryApplause();
+            addScore(quizScore, 'Kuis Cepat Buah');
+        }
+
+        /* Google Apps Script Integration */
+        function saveGasUrl() {
+            const url = document.getElementById('gas-url-input').value.trim();
+            if (url) {
+                appState.gasUrl = url;
+                saveState();
+                alert("URL Google Apps Script berhasil disimpan!");
+            }
+        }
+
+        function submitResultToGoogleSheet() {
+            const childName = document.getElementById('input-child-name').value.trim() || 'Anak PAUD Ceria';
+            const gasUrl = appState.gasUrl;
+
+            if (!gasUrl) {
+                alert("URL Google Apps Script belum diisi! Silakan atur di menu 'Panduan Google Sheets & Deploy'.");
+                showSection('panduan-gas');
+                return;
+            }
+
+            const payload = {
+                nama: childName,
+                tanggal: new Date().toLocaleString('id-ID'),
+                aktivitas: 'Kuis Cepat Buah',
+                skor: quizScore
+            };
+
+            playSpeech("Mengirim hasil belajar ke Google Spreadsheet");
+
+            fetch(gasUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                alert(`Hore! Hasil belajar ${childName} berhasil terkirim ke Google Sheets!`);
+                playSpeech("Data berhasil terkirim!");
+            }).catch(err => {
+                alert("Gagal mengirim data. Pastikan koneksi internet aktif dan URL GAS benar.");
+            });
+        }
+
+        function copyGasCode() {
+            const code = document.getElementById('gas-code-block').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                alert("Kode Google Apps Script berhasil disalin!");
+            });
+        }
+
+        /* ==========================================================================
+           8. INIT APPLICATION
+           ========================================================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            renderBelajarBuah();
+            initAssemblePicker();
+            initPuzzleFruitPicker();
+        });
+    </script>
+</body>
+</html>
